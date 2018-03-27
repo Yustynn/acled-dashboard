@@ -116,7 +116,7 @@ def update_event_years(hover_data):
         layout=go.Layout(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            title='Cumulative Distribution of Fatalities from <br>{} over {}'.format(event, year),
+            title='Fatalities from<br>{} over the Years'.format(event),
             xaxis={'title': 'Cumulative Fatalities'},
             yaxis={'title': 'Time'},
             hovermode='closest'
@@ -150,7 +150,7 @@ def update_event_years(hover_data):
         layout=go.Layout(
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            title='Fatalities from<br>{} over the Years'.format(event),
+            title='Cumulative Distribution of Fatalities from <br>{} over {}'.format(event, year),
             xaxis={'title': 'Fatalities'},
             yaxis={'title': 'Year'},
             hovermode='closest'

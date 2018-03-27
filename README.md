@@ -1,4 +1,4 @@
-![](acled-viz.png)
+![](acled-viz-pic.png)
 
 ## Project Description
 This provides an interactive dashboard interface to allow for a quick scanning of the fatalities induced by violent events in Africa.
