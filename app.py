@@ -15,24 +15,9 @@ years = df.YEAR.unique()
 app = dash.Dash()
 app.config['suppress_callback_exceptions']=True
 
-    # data,
-    # x=~YEAR,
-    # y=~NUM_EVENTS,
-    # type='scatter',
-    # mode='markers',
-    # color=~EVENT_TYPE,
-    # colors= "Set1",
-    # hoverinfo='text',
-    # text=~glue('Event: {EVENT_TYPE}<br>No. of Fatalities: {FATALITIES}<br>Year: {YEAR}<br>Number of Events: {NUM_EVENTS}'),
-    # hoverlabel=list(bgcolor='rgb(40,40,40)', font=list(color='rgb(200,200,200)')),
-    # sizes = c(30, 1000),
-    # size=~FATALITIES,
-    # marker=list(
-        # opacity=.8
-    # )
-
 cf_bubble = dcc.Graph(
     id='cf-bubble',
+    style={'height': '700px'},
     figure=dict(
         data=[
             go.Scatter(
@@ -57,6 +42,9 @@ cf_bubble = dcc.Graph(
         ],
         colors='Set1',
         layout=go.Layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            title='Number of Fatalities by Size of Bubble',
             xaxis={'title': 'Year'},
             yaxis={'title': 'Number of Events'},
             hovermode='closest'
@@ -66,26 +54,44 @@ cf_bubble = dcc.Graph(
 
 
 layout = html.Div(
-    cf_bubble,
-    style={'width': '59%', 'display': 'inline-block'}
+    cf_bubble
 )
 
-# Barebones layout
 app.layout = html.Div([
-    dcc.Interval(id='refresh', interval=200),
-    html.Div(id='content', className="container"),
-    html.Div(
-        [
-            dcc.Graph(id='fatal-time'),
-            dcc.Graph(id='event-years'),
-        ],
-        style={'width': '39%', 'display': 'inline-block'}
+    html.H1(
+        'Visualizations of Violent Events in Africa',
+        style={'text-align': 'center'}
+    ),
+    html.Div([
+        dcc.Interval(id='refresh', interval=200),
+        html.Div(id='content', className="container"),
+        html.Div(
+            [
+                dcc.Graph(
+                    id='fatal-time',
+                    style={'height': '350px'}
+                ),
+                dcc.Graph(
+                    id='event-years',
+                    style={'height': '350px'}
+                ),
+            ],
+            style={'width': '39%', 'display': 'inline-block'}
+        )],
+        style={'display': 'flex'}
     )
 ])
 
-# Update the `content` div with the `layout` object.
-# When you save this file, `debug=True` will re-run
-# this script, serving the new layout
+def extract_event_year(hover_data):
+    p = re.compile('\s(.+)<')
+    point = hover_data['points'][0]
+    hover_text = point['text']
+
+    event = p.search(hover_text).groups()[0]
+    year = point['x']
+
+    return event, year
+
 @app.callback(
     Output('content', 'children'),
     events=[Event('refresh', 'interval')])
@@ -97,11 +103,7 @@ def display_layout():
     [Input('cf-bubble', 'hoverData')],
 )
 def update_event_years(hover_data):
-    print('triggered!!!')
-    p = re.compile('\s(.+)<')
-    hover_text = hover_data['points'][0]['text']
-    event = p.search(hover_text).groups()[0]
-
+    event, year = extract_event_year(hover_data)
     across_years = by_event[by_event.index.get_level_values('EVENT_TYPE') == event]
 
     return dict(
@@ -110,7 +112,15 @@ def update_event_years(hover_data):
                 x=across_years.index.get_level_values('YEAR'),
                 y=across_years.tolist()
             )
-        ]
+        ],
+        layout=go.Layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            title='Cumulative Distribution of Fatalities from <br>{} over {}'.format(event, year),
+            xaxis={'title': 'Cumulative Fatalities'},
+            yaxis={'title': 'Time'},
+            hovermode='closest'
+        )
     )
 
 @app.callback(
@@ -118,12 +128,7 @@ def update_event_years(hover_data):
     [Input('cf-bubble', 'hoverData')],
 )
 def update_event_years(hover_data):
-    p = re.compile('\s(.+)<')
-    point = hover_data['points'][0]
-    hover_text = point['text']
-
-    event = p.search(hover_text).groups()[0]
-    year = point['x']
+    event, year = extract_event_year(hover_data)
 
     fatalities = df[
         (df.YEAR == year) & (df.EVENT_TYPE == event)
@@ -141,11 +146,19 @@ def update_event_years(hover_data):
                 line=dict(color='rgb(127, 166, 238)'),
                 fill='tonexty'
             )
-        ]
-    )
+        ],
+        layout=go.Layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            title='Fatalities from<br>{} over the Years'.format(event),
+            xaxis={'title': 'Fatalities'},
+            yaxis={'title': 'Year'},
+            hovermode='closest'
+        )
+   )
 
 
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+# app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
 if __name__ == '__main__':
     app.run_server(debug=True)
