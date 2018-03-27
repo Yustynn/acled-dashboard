@@ -65,11 +65,15 @@ cf_bubble = dcc.Graph(
 )
 
 
-layout = html.Div([
-    html.Div(
-        cf_bubble,
-        style={'width': '59%', 'display': 'inline-block'}
-    ),
+layout = html.Div(
+    cf_bubble,
+    style={'width': '59%', 'display': 'inline-block'}
+)
+
+# Barebones layout
+app.layout = html.Div([
+    dcc.Interval(id='refresh', interval=200),
+    html.Div(id='content', className="container"),
     html.Div(
         [
             dcc.Graph(id='fatal-time'),
@@ -77,13 +81,6 @@ layout = html.Div([
         ],
         style={'width': '39%', 'display': 'inline-block'}
     )
-])
-
-# Barebones layout
-app.layout = html.Div([
-    dcc.Interval(id='refresh', interval=200),
-    html.Div(id='content', className="container"),
-    html.H1('HI', id='test')
 ])
 
 # Update the `content` div with the `layout` object.
@@ -100,6 +97,7 @@ def display_layout():
     [Input('cf-bubble', 'hoverData')],
 )
 def update_event_years(hover_data):
+    print('triggered!!!')
     p = re.compile('\s(.+)<')
     hover_text = hover_data['points'][0]['text']
     event = p.search(hover_text).groups()[0]
@@ -114,6 +112,38 @@ def update_event_years(hover_data):
             )
         ]
     )
+
+@app.callback(
+    Output('fatal-time', 'figure'),
+    [Input('cf-bubble', 'hoverData')],
+)
+def update_event_years(hover_data):
+    p = re.compile('\s(.+)<')
+    point = hover_data['points'][0]
+    hover_text = point['text']
+
+    event = p.search(hover_text).groups()[0]
+    year = point['x']
+
+    fatalities = df[
+        (df.YEAR == year) & (df.EVENT_TYPE == event)
+    ][['EVENT_DATE', 'FATALITIES']]
+
+    fatalities.EVENT_DATE = pd.to_datetime(fatalities.EVENT_DATE)
+
+    fatalities = fatalities.set_index('EVENT_DATE').resample('M').sum()
+
+    return dict(
+        data=[
+            go.Scatter(
+                x=fatalities.index,
+                y=fatalities.cumsum().FATALITIES.values,
+                line=dict(color='rgb(127, 166, 238)'),
+                fill='tonexty'
+            )
+        ]
+    )
+
 
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
