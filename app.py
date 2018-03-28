@@ -13,6 +13,7 @@ events = df.EVENT_TYPE.unique()
 years = df.YEAR.unique()
 
 app = dash.Dash()
+server = app.server
 app.config['suppress_callback_exceptions']=True
 
 cf_bubble = dcc.Graph(
