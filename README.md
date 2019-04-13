@@ -5,8 +5,12 @@ This provides an interactive dashboard interface to allow for a quick scanning o
 
 It was built with Plot.ly's [Dash](https://dash.plot.ly/) library, which is a pretty nice reactive Python interface that compiles down into a React.js app with a Flask backend.
 
+## Running the Project
+1. `pip install -r requirements.txt` (install the requirements)
+2. `python app.py` (run the project)
+
 ## Motivation
-This started off as a homework assignment in R, and evolved into something way bigger. I really liked the bubble chart I built and wondered if I could take it further. This is me taking it further.
+This started off as a homework assignment in R, and evolved into something far bigger (and in python). The topic was interesting, and visualization-wise I really liked the bubble chart I built and wondered if I could take it further. This is me taking it further.
 
 ## Interesting Finding
 The [Eritrean-Ethiopian](https://en.wikipedia.org/wiki/Eritrean–Ethiopian_War) War of May 1998 to June 2000
